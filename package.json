@@ -1,0 +1,19 @@
+{
+  "name": "arduino-ota-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/khase/ArduinoOTA-Server.git"
+  },
+  "author": "Ken Hasenbank",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/khase/ArduinoOTA-Server/issues"
+  },
+  "homepage": "https://github.com/khase/ArduinoOTA-Server#readme"
+}
