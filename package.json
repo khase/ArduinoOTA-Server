@@ -4,7 +4,7 @@
   "description": "",
   "main": "dist/server.js",
   "scripts": {
-    "start": "node dist/src/server.js",
+    "start": "gulp watch:poll",
     "gulp": "gulp",
     "build": "gulp build",
     "watch": "gulp watch",
@@ -24,7 +24,9 @@
   "devDependencies": {
     "@types/body-parser": "^1.16.5",
     "@types/express": "^4.0.37",
+    "@types/morgan": "^1.7.32",
     "@types/node": "^8.0.26",
+    "@types/winston": "^2.3.5",
     "gulp": "^3.9.1",
     "gulp-cli": "^1.4.0",
     "gulp-nodemon": "^2.2.1",

@@ -24,7 +24,7 @@ gulp.task(BUILD, function (callback) {
 
 // Removes the ./build directory with all its content.
 gulp.task(CLEAN_BUILD, function (callback) {
-  rimraf("./build", callback);
+  rimraf(TS_DIST_GLOB, callback);
 });
 
 // Checks all *.ts-files if they are conform to the rules specified in tslint.json.
@@ -43,20 +43,14 @@ gulp.task(COMPILE_TYPESCRIPT, function () {
     .pipe(sourcemaps.init())
     .pipe(tsProject())
     .pipe(sourcemaps.write())
-    .pipe(gulp.dest("./build"));
-});
-
-gulp.task("default", function () {
-    return tsProject.src()
-        .pipe(tsProject())
-        .js.pipe(gulp.dest(TS_DIST_GLOB));
+    .pipe(gulp.dest(TS_DIST_GLOB));
 });
 
 // Runs the build task and starts the server every time changes are detected.
 gulp.task(WATCH, [BUILD], function () {
   return nodemon({
     ext: "ts js json",
-    script: "build/src/server.js",
+    script: TS_DIST_GLOB + "/src/server.js",
     watch: ["src/*", "test/*"],
     tasks: [BUILD]
   });
@@ -66,7 +60,7 @@ gulp.task(WATCH, [BUILD], function () {
 gulp.task(WATCH_POLL, [BUILD], function () {
   return nodemon({
     ext: "ts js json",
-    script: "build/src/server.js",
+    script: TS_DIST_GLOB + "/src/server.js",
     watch: ["src/*", "test/*"],
     legacyWatch: true, // Uses the legacy polling to get changes even on docker/vagrant-mounts
     tasks: [BUILD]
