@@ -24,7 +24,9 @@ export class Server {
     start() {
         // Request logger
         // winston.level = config.loglevel;
-        this.app.use(morgan('combined'));
+        this.app.use(morgan('combined', {
+            skip: function (req, res) { return res.statusCode < 400 }
+        }));
 
         this.app.listen(config.port, () => {
             winston.log('info', '--> Server successfully started at port %d', config.port);
