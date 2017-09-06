@@ -12,10 +12,10 @@ pids
 *.pid.lock
 
 # Compiled
-dist
+dist/**/*
 
 # Node Modules
-node_modules
+node_modules/**/*
 
 # IDE settings
 .idea
