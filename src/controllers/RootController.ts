@@ -1,10 +1,14 @@
 import {Get, JsonController} from 'routing-controllers';
 
 @JsonController('/')
-export class AuthController {
+export class RootController {
 
     @Get('/')
     root() {
-        return {success: true};
+        return {
+            info: 'ArduinoOTA Service provider',
+            version: '0.0.1',
+            servertime: new Date()
+        };
     }
 }

@@ -1,8 +1,10 @@
+import 'reflect-metadata';
 import {createExpressServer} from 'routing-controllers';
 import * as morgan from 'morgan';
 import * as winston from 'winston';
 import {Express} from 'express';
 import config from './config/main';
+import {MyDB} from './services/MyDB';
 
 /**
  * Root class of your node server.
@@ -22,15 +24,28 @@ export class Server {
     }
 
     start() {
-        // Request logger
-        // winston.level = config.loglevel;
-        this.app.use(morgan('combined', {
-            skip: function (req, res) { return res.statusCode < 400 }
-        }));
+        winston.level = 'debug';
+        MyDB.setup()
+            .catch((err) => {
+                winston.error('Could not connect to DB');
+                winston.error(err);
+            })
+            .then(() => {
 
-        this.app.listen(config.port, () => {
-            winston.log('info', '--> Server successfully started at port %d', config.port);
-        });
+                // Request logger
+                this.app.use(morgan('combined', {
+                    skip: function (req, res) {
+                        return res.statusCode < 400
+                    }
+                }));
+
+                this.app.listen(config.port, () => {
+                    winston.log('info', '--> Server successfully started at port %d', config.port);
+                });
+            })
+            .catch((err) => {
+                process.exit(1);
+            });
     }
 }
 

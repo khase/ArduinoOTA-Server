@@ -8,6 +8,14 @@ export default {
     // Setting port for server
     port: process.env.PORT || 80,
 
+    // Database
+    dbConnectionDetails: {
+        host: process.env.DB_HOST || 'localhost',
+        user: process.env.DB_USER || 'espota',
+        password: process.env.DB_PASSWORD || 'definitlynotsecret',
+    },
+    database: process.env.DB_NAME || 'espota',
+
     // BaseUrl
     baseurl: process.env.BASEURL || 'http://localhost:' + this.port,
 }
