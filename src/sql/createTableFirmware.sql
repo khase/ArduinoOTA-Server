@@ -3,5 +3,6 @@ CREATE TABLE IF NOT EXISTS `firmware` (
   `description` VARCHAR(255) NULL,
   `hash` BLOB NULL,
   `path` VARCHAR(255) NULL,
+  `size` INT NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;

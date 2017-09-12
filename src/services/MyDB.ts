@@ -1,8 +1,14 @@
-import {createConnection, IConnection, IError} from 'mysql';
+import {createConnection, IConnection, IError, IFieldInfo} from 'mysql';
 import * as fs from 'fs';
 import * as path from 'path';
 import config from '../config/main';
 import * as winston from 'winston';
+import {OTAInfo} from '../dto/OTAInfo/OTAInfo';
+import {isNullOrUndefined} from 'util';
+import {Device} from '../dto/Database/Device';
+import {DeviceInfo} from '../dto/DeviceInfo/DeviceInfo';
+import {DeploymentInfo} from '../dto/DeviceInfo/DeploymentInfo';
+import {FirmwareInfo} from '../dto/DeviceInfo/FirmwareInfo';
 
 export class MyDB {
     private static NOT_INITIALIZED = 'Database not initialized';
@@ -32,6 +38,9 @@ export class MyDB {
 
     private static initConnection() {
         MyDB.db = createConnection(config.dbConnectionDetails);
+        MyDB.db.on('error', function(err) {
+            console.log(err); // 'ER_BAD_DB_ERROR'
+        });
         return new Promise(function (resolve, reject) {
             MyDB.db.connect((err: IError) => {
                 if (err != null) {
@@ -74,7 +83,7 @@ export class MyDB {
             .catch((err) => {
                 winston.debug(tableName + ' does not exist');
                 return MyDB.loadFile(sqlPath)
-                    .then((data) => {
+                    .then((data: string) => {
                         winston.debug('creating table ' + tableName);
                         return MyDB.query(data);
                     });
@@ -85,14 +94,20 @@ export class MyDB {
     }
 
     private static query(sql: string) {
-        return new Promise(function (resolve, reject) {
-            MyDB.db.query(sql, (err: IError, results?: any) => {
-                if (err != null) {
-                    return reject(err);
-                }
-                return resolve(results);
+        return MyDB.checkConnection()
+            .catch(() => {
+                MyDB.setup();
+            })
+            .then(() => {
+                return new Promise(function (resolve, reject) {
+                    MyDB.db.query(sql, (err: IError, results?: any, fields?: IFieldInfo[]) => {
+                        if (err != null) {
+                            return reject(err);
+                        }
+                        return resolve(results);
+                    });
+                });
             });
-        });
     }
 
     private static loadFile(file: string) {
@@ -107,5 +122,64 @@ export class MyDB {
         });
     }
 
+    public static loadDeviceInfo(device: OTAInfo): Promise<DeviceInfo> {
+        return MyDB.query('UPDATE device ' +
+            'SET lastseen=\'' + MyDB.mySQLDate(new Date()) + '\' ' +
+            'WHERE mac=\'' + device.staMac + '\'')
+            .then((result) => {
+                if (result.affectedRows === 0) {
+                    winston.info('device not found');
+                    return MyDB.query('INSERT INTO device ' +
+                        '(mac, currentversion, lastseen) VALUES (\'' +
+                        device.staMac + '\' ,\'' +
+                        device.currentSketch.versionInfo + '\' ,\'' +
+                        MyDB.mySQLDate(new Date()) + '\')');
+                }
+            })
+            .then(() => {
+                return new DeviceInfo();
+            })
+            .then((info: DeviceInfo) => {
+                return MyDB.query('SELECT * ' +
+                    'FROM device ' +
+                    'WHERE mac=\'' + device.staMac + '\'')
+                    .then((result: Device[]) => {
+                        info.id = result[0].id;
+                        info.mac = result[0].mac;
+                        info.name = result[0].name;
+                        info.description = result[0].description;
+                        info.lastSeen = result[0].lastseen;
+                        info.currentVersion = result[0].currentversion;
+                        info.lastError = result[0].lasterror;
+                        info.deployments = [];
+                        return info
+                    });
+            })
+            .then((info: DeviceInfo) => {
+                return MyDB.query('SELECT * ' +
+                    'FROM (' +
+                        'SELECT * ' +
+                        'FROM deployment ' +
+                        'WHERE device_id=' + info.id + ') AS deployment ' +
+                    'JOIN firmware on firmware.id=deployment.firmware_id')
+                    .then((result) => {
+                        result.forEach(function (value) {
+                            const depInfo = new DeploymentInfo();
+                            const firInfo = new FirmwareInfo();
+                            firInfo.description = value.description;
+                            firInfo.hash = value.hash;
+                            firInfo.size = value.size;
+                            firInfo.path = value.path;
+                            depInfo.firmware = firInfo;
+                            depInfo.triggered = value.triggered;
+                            info.deployments.push(depInfo);
+                        })
+                        return info;
+                    });
+            });
+    }
 
+    private static mySQLDate(date: Date) {
+        return date.toISOString().slice(0, 19).replace('T', ' ');
+    }
 }

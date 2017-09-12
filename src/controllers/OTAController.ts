@@ -1,12 +1,22 @@
-import {BadRequestError, Get, HeaderParams, HttpCode, HttpError, JsonController} from 'routing-controllers';
+import {
+    BadRequestError,
+    Get, HeaderParams, InternalServerError,
+    JsonController, Res, UseInterceptor
+} from 'routing-controllers';
+import {Response} from 'express';
 import {OTAInfo} from '../dto/OTAInfo/OTAInfo';
+import {MyDB} from '../services/MyDB';
+import {NotModified} from '../etc/NotModified';
+import {DeviceInfo} from '../dto/DeviceInfo/DeviceInfo'
+import {DeploymentInfo} from '../dto/DeviceInfo/DeploymentInfo';
+import * as fs from 'fs';
 
 @JsonController('/ota')
 export class RootController {
 
     @Get('/')
-    root(@HeaderParams() header: any) {
-        if (header['user-agent'] === 'ESP8266-http-Update') {
+    root(@HeaderParams() header: any, @Res() response: Response) {
+        if (header['user-agent'] === 'ESP8266-http-Update' || header['debug']) {
             const espData: OTAInfo = new OTAInfo();
             espData.mode = header['x-esp8266-mode'];
             espData.staMac = header['x-esp8266-sta-mac'];
@@ -17,16 +27,31 @@ export class RootController {
             espData.currentSketch.versionInfo = header['x-esp8266-version'];
             espData.sdkVersion = header['x-esp8266-sdk-version'];
 
-            this.handleArduinoOTARequest(espData);
+            return this.handleArduinoOTARequest(espData, response);
         } else {
             throw new BadRequestError('this route is for esp only');
         }
     }
 
-    handleArduinoOTARequest(esp: OTAInfo) {
-        console.log(esp);
-
-        // no firmwareupdate needed. Throw NOT_MODIFIED error code
-        throw new HttpError(304);
+    handleArduinoOTARequest(esp: OTAInfo, response: Response) {
+        return MyDB.loadDeviceInfo(esp)
+            .catch((err) => {
+                throw new InternalServerError(err);
+            })
+            .then((device: DeviceInfo) => {
+                const pending: DeploymentInfo[] = device.getPendingDeployments();
+                if (pending.length === 0) {
+                    // no firmwareupdate needed. Throw NOT_MODIFIED error code
+                    throw new NotModified();
+                } else {
+                    const deployment = pending[0];
+                    const path = deployment.firmware.path;
+                    if (fs.existsSync(path)) {
+                        return fs.createReadStream(path);
+                    } else {
+                        throw new InternalServerError('firmware not found');
+                    }
+                }
+            });
     }
 }
