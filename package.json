@@ -2,9 +2,9 @@
   "name": "arduino-ota-server",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/server.js",
+  "main": "dist/src/server.js",
   "scripts": {
-    "start": "gulp watch:poll",
+    "start": "npm dist/src/server.js",
     "gulp": "gulp",
     "build": "gulp build",
     "watch": "gulp watch",
