@@ -11,8 +11,14 @@ pids
 *.seed
 *.pid.lock
 
+# Editor backups
+*.mwb.bak
+
 # Compiled
 dist/**/*
+
+# Persist data
+persist/**/*
 
 # Node Modules
 node_modules/**/*
