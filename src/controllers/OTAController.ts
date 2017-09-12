@@ -1,7 +1,7 @@
 import {
     BadRequestError,
     Get, HeaderParams, InternalServerError,
-    JsonController, Res, UseInterceptor
+    JsonController, NotFoundError, Res, UseInterceptor
 } from 'routing-controllers';
 import {Response} from 'express';
 import {OTAInfo} from '../dto/OTAInfo/OTAInfo';
@@ -9,6 +9,7 @@ import {MyDB} from '../services/MyDB';
 import {NotModified} from '../etc/NotModified';
 import {DeviceInfo} from '../dto/DeviceInfo/DeviceInfo'
 import {DeploymentInfo} from '../dto/DeviceInfo/DeploymentInfo';
+import config from '../config/main';
 import * as fs from 'fs';
 
 @JsonController('/ota')
@@ -45,11 +46,20 @@ export class RootController {
                     throw new NotModified();
                 } else {
                     const deployment = pending[0];
-                    const path = deployment.firmware.path;
+                    let path = deployment.firmware.path;
+                    if (!path.startsWith('/')) {
+                        path = config.firmwares + '/' + path;
+                    }
                     if (fs.existsSync(path)) {
-                        return fs.createReadStream(path);
+                        return new Promise(function(resolve, reject) {
+                            const stat = fs.statSync(path);
+                            response.header('content-length', stat.size.toString());
+                            response.header('content-type', 'application/octet-stream');
+                            deployment.deploy();
+                            resolve (fs.createReadStream(path));
+                        })
                     } else {
-                        throw new InternalServerError('firmware not found');
+                        throw new NotFoundError('firmware not found');
                     }
                 }
             });

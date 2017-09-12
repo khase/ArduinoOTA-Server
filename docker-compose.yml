@@ -12,12 +12,14 @@ services:
     image: "node"
     volumes:
       - ".:/usr/src"
+      - "./persist/firmwares:/usr/firmwares"
     working_dir: "/usr/src"
     command: "npm run watch:poll"
     environment:
       - "DB_HOST=db"
       - "DB_USER=root"
       - "DB_PASSWORD=aids"
+      - "FIRMWARE_DIR=/usr/firmwares"
     ports:
       - "80:80"
     links:

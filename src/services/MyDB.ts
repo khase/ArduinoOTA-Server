@@ -158,25 +158,33 @@ export class MyDB {
             .then((info: DeviceInfo) => {
                 return MyDB.query('SELECT * ' +
                     'FROM (' +
-                        'SELECT * ' +
+                        'SELECT id AS dep_id, device_id, firmware_id, triggered ' +
                         'FROM deployment ' +
                         'WHERE device_id=' + info.id + ') AS deployment ' +
                     'JOIN firmware on firmware.id=deployment.firmware_id')
                     .then((result) => {
                         result.forEach(function (value) {
                             const depInfo = new DeploymentInfo();
-                            const firInfo = new FirmwareInfo();
-                            firInfo.description = value.description;
-                            firInfo.hash = value.hash;
-                            firInfo.size = value.size;
-                            firInfo.path = value.path;
-                            depInfo.firmware = firInfo;
+                            const firmInfo = new FirmwareInfo();
+                            firmInfo.id = value.firmware_id;
+                            firmInfo.description = value.description;
+                            firmInfo.hash = value.hash;
+                            firmInfo.size = value.size;
+                            firmInfo.path = value.path;
+                            depInfo.id = value.dep_id;
+                            depInfo.firmware = firmInfo;
                             depInfo.triggered = value.triggered;
                             info.deployments.push(depInfo);
                         })
                         return info;
                     });
             });
+    }
+
+    public static setDeploymentTime(deployment: DeploymentInfo, date: Date) {
+        return MyDB.query('UPDATE deployment ' +
+            'SET triggered=\'' + MyDB.mySQLDate(date) + '\' ' +
+            'WHERE id=\'' + deployment.id + '\'');
     }
 
     private static mySQLDate(date: Date) {

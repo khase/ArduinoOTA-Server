@@ -16,6 +16,8 @@ export default {
     },
     database: process.env.DB_NAME || 'espota',
 
+    firmwares: process.env.FIRMWARE_DIR || '/firmwares',
+
     // BaseUrl
     baseurl: process.env.BASEURL || 'http://localhost:' + this.port,
 }
