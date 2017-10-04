@@ -46,7 +46,7 @@
     "morgan": "^1.8.2",
     "mysql": "^2.14.1",
     "reflect-metadata": "^0.1.10",
-    "routing-controllers": "^0.7.2",
+    "routing-controllers": "^0.7.3",
     "winston": "^2.3.1"
   }
 }
