@@ -13,7 +13,7 @@ services:
     volumes:
       - ".:/usr/src"
       - "./persist/firmwares:/usr/firmwares"
-    working_dir: "/usr/src"
+    working_dir: "/usr/src/api"
     command: "npm run watch:poll"
     environment:
       - "DB_HOST=db"
