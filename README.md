@@ -8,7 +8,7 @@ If the device requests its next update the server will provide it and mark the d
 
 # Longtime Goals
 
-I plan to provide this a public service where you can upload and deploy your code to IoT Devices inside and outside your own local area network.
+I plan to provide this as a public service where you can upload and deploy your code to IoT Devices inside and outside your own local area network.
 
 # TODOs
 
