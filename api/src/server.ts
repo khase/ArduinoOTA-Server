@@ -24,7 +24,6 @@ export class Server {
     }
 
     start() {
-        winston.level = 'debug';
         MyDB.setup()
             .catch((err) => {
                 winston.error('Could not connect to DB');
