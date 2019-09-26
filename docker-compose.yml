@@ -5,7 +5,7 @@ services:
     volumes:
       - "./persist/database:/var/lib/mysql"
     environment:
-      - "MYSQL_ROOT_PASSWORD=asdfsadf"
+      - "MYSQL_ROOT_PASSWORD=asdfasdf"
     ports:
       - "3606:3306"
   api:
