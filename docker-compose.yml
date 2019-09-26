@@ -1,15 +1,15 @@
 version: "2"
 services:
   db:
-    image: "mysql"
+    image: "mysql:5.7"
     volumes:
       - "./persist/database:/var/lib/mysql"
     environment:
-      - "MYSQL_ROOT_PASSWORD=aids"
+      - "MYSQL_ROOT_PASSWORD=asdfsadf"
     ports:
       - "3606:3306"
   api:
-    image: "node"
+    image: "node:11.15.0"
     volumes:
       - ".:/usr/src"
       - "./persist/firmwares:/usr/firmwares"
@@ -18,7 +18,7 @@ services:
     environment:
       - "DB_HOST=db"
       - "DB_USER=root"
-      - "DB_PASSWORD=aids"
+      - "DB_PASSWORD=asdfasdf"
       - "FIRMWARE_DIR=/usr/firmwares"
     ports:
       - "80:80"
