@@ -9,7 +9,7 @@ services:
     ports:
       - "3606:3306"
   api:
-    image: "node"
+    image: "node:11.15.0"
     volumes:
       - ".:/usr/src"
       - "./persist/firmwares:/usr/firmwares"
